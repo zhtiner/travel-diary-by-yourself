@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅游日记 - 照片地图记录</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <h1>🗺️ 旅游日记</h1>
+            <div class="nav-buttons">
+                <button id="uploadBtn" class="btn btn-primary">📸 上传照片</button>
+                <button id="generateBtn" class="btn btn-secondary">📝 生成日记</button>
+                <button id="shareBtn" class="btn btn-success">🔗 分享</button>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 地图视图 -->
+            <div class="map-container">
+                <div id="map" class="map"></div>
+                <div class="map-controls">
+                    <button id="toggleMap" class="btn btn-small">🗺️ 地图视图</button>
+                </div>
+            </div>
+
+            <!-- 照片墙 -->
+            <div class="photos-container">
+                <div class="photos-header">
+                    <h2>📷 我的照片</h2>
+                    <div class="filter-controls">
+                        <select id="locationFilter">
+                            <option value="">所有位置</option>
+                        </select>
+                        <input type="text" id="searchInput" placeholder="搜索照片或记录...">
+                    </div>
+                </div>
+                <div id="photosGrid" class="photos-grid">
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-content">
+                            <p>📸 拖拽照片到这里或点击上传</p>
+                            <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 编辑面板 -->
+            <div class="edit-panel" id="editPanel">
+                <div class="panel-header">
+                    <h3>📝 编辑记录</h3>
+                    <button id="closePanel" class="btn btn-small">✕</button>
+                </div>
+                <div class="panel-content">
+                    <div class="photo-preview">
+                        <img id="editPhoto" src="" alt="">
+                    </div>
+                    <div class="form-group">
+                        <label>拍摄地点：</label>
+                        <input type="text" id="photoLocation" placeholder="输入或在地图上选择位置">
+                    </div>
+                    <div class="form-group">
+                        <label>照片描述：</label>
+                        <textarea id="photoDescription" placeholder="记录你的旅游见闻、碎碎念..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>拍摄时间：</label>
+                        <input type="datetime-local" id="photoTime">
+                    </div>
+                    <div class="panel-actions">
+                        <button id="savePhoto" class="btn btn-primary">💾 保存</button>
+                        <button id="deletePhoto" class="btn btn-danger">🗑️ 删除</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 日记生成模态框 -->
+        <div class="modal" id="diaryModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📖 生成旅游日记</h3>
+                    <button id="closeDiaryModal" class="btn btn-small">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>日记标题：</label>
+                        <input type="text" id="diaryTitle" placeholder="例如：云南旅游日记" value="我的旅游日记">
+                    </div>
+                    <div class="form-group">
+                        <label>选择照片：</label>
+                        <div id="photoSelector" class="photo-selector">
+                            <!-- 照片选择器内容 -->
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>预览：</label>
+                        <div id="diaryPreview" class="diary-preview">
+                            <!-- 日记预览内容 -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="generateDiary" class="btn btn-primary">📝 生成日记</button>
+                    <button id="exportPDF" class="btn btn-success">📄 导出PDF</button>
+                    <button id="shareLink" class="btn btn-info">🔗 生成分享链接</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分享模态框 -->
+        <div class="modal" id="shareModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🔗 分享你的旅游日记</h3>
+                    <button id="closeShareModal" class="btn btn-small">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="share-options">
+                        <div class="share-option">
+                            <h4>📄 导出PDF</h4>
+                            <p>下载完整的旅游日记PDF文件</p>
+                            <button id="downloadPDF" class="btn btn-primary">下载PDF</button>
+                        </div>
+                        <div class="share-option">
+                            <h4>🔗 生成分享链接</h4>
+                            <p>生成一个可分享的网页链接</p>
+                            <div class="share-link-container">
+                                <input type="text" id="shareLinkInput" readonly>
+                                <button id="copyLink" class="btn btn-secondary">复制链接</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript库 -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
